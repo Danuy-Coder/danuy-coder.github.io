@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Senga bir savolim bor... 💌</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Google Fonts: Poppins (body/display) + Caveat (handwritten signature accent) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,500&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-deep:#120915;
+    --bg-plum:#1c0f24;
+    --bg-plum-2:#2a1533;
+    --rose:#ff6f9c;
+    --rose-2:#ff9db8;
+    --gold:#f3c77f;
+    --lilac:#c8a4ff;
+    --cream:#fff3ea;
+  }
+  *{ -webkit-tap-highlight-color: transparent; }
+  html{ scroll-behavior:smooth; }
+  body{
+    font-family:'Poppins', sans-serif;
+    background:var(--bg-deep);
+    color:var(--cream);
+    overflow-x:hidden;
+    cursor:none;
+  }
+  @media (max-width: 768px){
+    body{ cursor:auto; }
+  }
+  .font-hand{ font-family:'Caveat', cursive; }
+
+  /* ---------- Cursor heart ---------- */
+  #cursorDot{
+    position:fixed; top:0; left:0; width:10px; height:10px; border-radius:50%;
+    background:var(--rose); pointer-events:none; z-index:9999; transform:translate(-50%,-50%);
+    box-shadow:0 0 12px 2px rgba(255,111,156,.8);
+    transition:transform .08s ease;
+  }
+  .cursor-heart{
+    position:fixed; pointer-events:none; z-index:9998; color:var(--rose);
+    font-size:14px; animation:cursorHeartFade 1s ease-out forwards;
+  }
+  @keyframes cursorHeartFade{
+    0%{ opacity:.9; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
+    100%{ opacity:0; transform:translate(-50%,-140%) scale(.4) rotate(25deg); }
+  }
+
+  /* ---------- Background layers ---------- */
+  .aurora-bg{
+    position:fixed; inset:0; z-index:0; overflow:hidden;
+    background:radial-gradient(ellipse at top, var(--bg-plum) 0%, var(--bg-deep) 60%);
+  }
+  .aurora-blob{
+    position:absolute; border-radius:50%; filter:blur(90px); opacity:.55;
+    animation:driftBlob 18s ease-in-out infinite alternate;
+  }
+  .blob1{ width:60vw; height:60vw; background:var(--rose); top:-20%; left:-15%; }
+  .blob2{ width:50vw; height:50vw; background:var(--lilac); bottom:-25%; right:-10%; animation-delay:-6s; }
+  .blob3{ width:40vw; height:40vw; background:var(--gold); top:30%; right:15%; animation-delay:-11s; opacity:.35;}
+  @keyframes driftBlob{
+    0%{ transform:translate(0,0) scale(1); }
+    100%{ transform:translate(4%,6%) scale(1.15); }
+  }
+
+  canvas#stars{ position:fixed; inset:0; z-index:1; pointer-events:none; }
+
+  .floating-hearts{ position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+  .fh{
+    position:absolute; bottom:-10%; color:var(--rose-2); opacity:0;
+    animation:floatUp linear infinite;
+  }
+  @keyframes floatUp{
+    0%{ transform:translateY(0) translateX(0) rotate(0deg); opacity:0; }
+    8%{ opacity:.85; }
+    92%{ opacity:.6; }
+    100%{ transform:translateY(-115vh) translateX(var(--drift,20px)) rotate(340deg); opacity:0; }
+  }
+
+  /* ---------- Glass card ---------- */
+  .glass{
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    box-shadow:0 8px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+
+  .btn-primary{
+    background:linear-gradient(135deg, var(--rose), #ff4f81);
+    box-shadow:0 10px 30px -8px rgba(255,79,129,.65), inset 0 1px 0 rgba(255,255,255,.35);
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, filter .25s ease;
+  }
+  .btn-primary:active{ transform:scale(.94); }
+  .btn-primary:hover{ transform:translateY(-3px) scale(1.03); filter:brightness(1.08); }
+
+  .btn-ghost{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.25);
+    transition:all .25s ease;
+  }
+  .btn-ghost:hover{ background:rgba(255,255,255,.16); transform:translateY(-2px); }
+
+  #noBtn{
+    position:relative;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+    touch-action:none;
+    z-index:50;
+  }
+
+  .section{
+    min-height:100vh;
+    position:relative; z-index:10;
+    display:flex; align-items:center; justify-content:center;
+    padding:2.5rem 1.25rem;
+  }
+
+  .reveal{ opacity:0; transform:translateY(40px); transition:opacity .9s ease, transform .9s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+
+  .locked{ display:none; }
+
+  /* Gallery photo card */
+  .photo-card{
+    aspect-ratio: 4/5;
+    background:linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.02));
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  .photo-card .ph-icon{ font-size:2.6rem; opacity:.35; }
+
+  /* Love meter heart */
+  .heart-meter-wrap{ position:relative; width:180px; height:180px; margin:0 auto; }
+  .heart-meter-wrap i{
+    position:absolute; inset:0; font-size:180px; line-height:1;
+    color:rgba(255,255,255,.08);
+  }
+  .heart-meter-fill{
+    position:absolute; inset:0; font-size:180px; line-height:1;
+    color:var(--rose);
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 2.2s cubic-bezier(.22,.68,.32,1.05);
+    filter:drop-shadow(0 0 18px rgba(255,111,156,.7));
+  }
+
+  .typewriter-line{
+    opacity:0; min-height:1.6em;
+  }
+
+  ::selection{ background:var(--rose); color:#1c0f24; }
+
+  .sparkle-divider{
+    width:60px; height:2px; background:linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin:0 auto;
+  }
+
+  /* SweetAlert theming */
+  .swal2-popup.romantic-popup{
+    background: rgba(28,15,36,.92) !important;
+    color:#fff3ea !important;
+    border:1px solid rgba(255,255,255,.15);
+    backdrop-filter:blur(14px);
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<div id="cursorDot" class="hidden md:block"></div>
+<div class="aurora-bg">
+  <div class="aurora-blob blob1"></div>
+  <div class="aurora-blob blob2"></div>
+  <div class="aurora-blob blob3"></div>
+</div>
+<canvas id="stars"></canvas>
+<div class="floating-hearts" id="floatingHearts"></div>
+
+<!-- ============ SECTION 1: HERO ============ -->
+<section class="section" id="hero">
+  <div class="glass rounded-[2rem] max-w-md w-full px-7 py-12 text-center reveal in">
+    <div class="text-6xl mb-5 animate__animated animate__heartBeat animate__infinite animate__slower">😊</div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Salom <span class="inline-block">😊</span></h1>
+    <p class="text-lg sm:text-xl text-rose-100/80 font-light mb-9">Bugun senga kichkina savolim bor...</p>
+    <button id="startBtn" class="btn-primary text-white font-semibold text-lg px-9 py-4 rounded-full">
+      Boshlash <i class="fa-solid fa-heart ml-1"></i>
+    </button>
+  </div>
+</section>
+
+<!-- ============ SECTION 2: PROPOSAL ============ -->
+<section class="section" id="proposal">
+  <div class="glass rounded-[2rem] max-w-lg w-full px-7 py-12 text-center reveal">
+    <div class="text-5xl mb-6">🥹</div>
+    <h2 class="text-3xl sm:text-4xl font-bold mb-10 leading-snug">Menga sevgilim bo'lasanmi? <span>🥹❤️</span></h2>
+    <div class="flex flex-col sm:flex-row gap-5 justify-center items-center relative min-h-[160px]">
+      <button id="yesBtn" class="btn-primary text-white font-semibold text-lg px-10 py-4 rounded-full w-56 sm:w-auto">
+        ❤️ Ha
+      </button>
+      <button id="noBtn" class="btn-ghost text-white font-semibold text-lg px-10 py-4 rounded-full w-56 sm:w-auto">
+        😒 Yo'q
+      </button>
+    </div>
+    <p class="text-xs text-white/40 mt-8">( Yo'q tugmasi... omadingni sinab ko'r 😌 )</p>
+  </div>
+</section>
+
+<!-- ============ SECTION 3: GALLERY ============ -->
+<section class="section locked" id="gallery">
+  <div class="max-w-5xl w-full">
+    <div class="text-center mb-12 reveal">
+      <span class="font-hand text-3xl text-[var(--gold)]">bizning kichkina xotiralarimiz</span>
+      <div class="sparkle-divider mt-4"></div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="reveal">
+        <div class="glass rounded-3xl overflow-hidden photo-card">
+          <img src="https://i.ibb.co.com/LDn664mp/IMG-20260701-235330-415.jpg" alt="Xotira 1" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="ph-icon" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center;"><i class="fa-solid fa-image"></i></div>
+        </div>
+        <p class="text-center font-hand text-2xl text-rose-100/90 mt-4 px-2">Sening tabassuming kunimni chiroyli qiladi.</p>
+      </div>
+      <div class="reveal" style="transition-delay:.15s">
+        <div class="glass rounded-3xl overflow-hidden photo-card">
+          <img src="https://i.ibb.co.com/CXyG7dD/IMG-20260701-235300-328.jpg" alt="Xotira 2" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="ph-icon" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center;"><i class="fa-solid fa-image"></i></div>
+        </div>
+        <p class="text-center font-hand text-2xl text-rose-100/90 mt-4 px-2">Har safar seni ko'rsam, kayfiyatim ko'tariladi.</p>
+      </div>
+      <div class="reveal" style="transition-delay:.3s">
+        <div class="glass rounded-3xl overflow-hidden photo-card">
+          <img src="https://i.ibb.co.com/wNZdLGHk/IMG-20260701-235252-571.jpg" alt="Xotira 3" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="ph-icon" style="display:none; position:absolute; inset:0; align-items:; justify-content:center;"><i class="fa-solid fa-image"></i></div>
+        </div>
+        <p class="text-center font-hand text-2xl text-rose-100/90 mt-4 px-2">Balki bu kichkina sayt... katta hikoyamizning boshlanishidir. ❤️</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 4: QUIZ ============ -->
+<section class="section locked" id="quiz">
+  <div class="glass rounded-[2rem] max-w-lg w-full px-7 py-12 text-center reveal">
+    <div class="text-5xl mb-5">😂</div>
+    <h2 class="text-2xl sm:text-3xl font-bold mb-9">Meni nech foiz yoqtirasan? <span>😂</span></h2>
+    <div class="grid grid-cols-2 gap-4">
+      <button class="quiz-opt btn-ghost rounded-2xl py-5 text-xl font-semibold" data-val="10">10%</button>
+      <button class="quiz-opt btn-ghost rounded-2xl py-5 text-xl font-semibold" data-val="30">30%</button>
+      <button class="quiz-opt btn-ghost rounded-2xl py-5 text-xl font-semibold" data-val="50">50%</button>
+      <button class="quiz-opt btn-primary text-white rounded-2xl py-5 text-xl font-bold" data-val="100">100%</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 5: LOVE METER ============ -->
+<section class="section locked" id="lovemeter">
+  <div class="glass rounded-[2rem] max-w-md w-full px-7 py-12 text-center reveal">
+    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Moslik darajasi</h2>
+    <p class="text-white/50 mb-8 text-sm">hisoblanmoqda...</p>
+    <div class="heart-meter-wrap">
+      <i class="fa-solid fa-heart"></i>
+      <i class="fa-solid fa-heart heart-meter-fill" id="heartFill"></i>
+    </div>
+    <div class="mt-6 text-4xl font-extrabold" id="meterPercent">1%</div>
+    <div class="mt-3 text-lg text-rose-200/80" id="meterLabel">Moslik: <span id="meterLabelNum">1</span>%</div>
+  </div>
+</section>
+
+<!-- ============ SECTION 6: FINAL ============ -->
+<section class="section locked" id="final" style="background:radial-gradient(ellipse at bottom, #1a0d22 0%, #0c0610 75%);">
+  <canvas id="fireflies" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+  <div class="max-w-xl w-full text-center relative z-10 px-4">
+    <div class="min-h-[220px] sm:min-h-[190px] flex flex-col justify-center gap-2 mb-10 font-light text-lg sm:text-xl leading-relaxed" id="typewriterBox">
+      <p class="typewriter-line" data-text="Bilasanmi..."></p>
+      <p class="typewriter-line" data-text="Men seni kuldirishni yaxshi ko'raman."></p>
+      <p class="typewriter-line" data-text="Hayotingga ozgina bo'lsa ham quvonch olib kirishni istayman."></p>
+      <p class="typewriter-line" data-text="Agar javobing hozir &quot;yo'q&quot; bo'lsa ham..."></p>
+      <p class="typewriter-line" data-text="Men xafa bo'lmayman."></p>
+      <p class="typewriter-line" data-text="Lekin bir kuni &quot;ha&quot; desang..."></p>
+      <p class="typewriter-line font-semibold text-[var(--rose-2)]" data-text="Bu meni dunyodagi eng baxtli odam qiladi. ❤️"></p>
+    </div>
+
+    <div id="endingBlock" class="opacity-0 transition-opacity duration-1000">
+      <div class="text-7xl mb-6 animate__animated animate__heartBeat animate__infinite animate__slower">❤️</div>
+      <p class="text-xl sm:text-2xl font-medium mb-10">Rahmat, shu saytni oxirigacha ko'rganing uchun.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button id="hugBtn" class="btn-ghost rounded-full px-8 py-4 font-semibold text-lg">🤍 Meni quchoqla</button>
+        <button id="writeBtn" class="btn-primary text-white rounded-full px-8 py-4 font-semibold text-lg">💌 Menga yoz</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* =========================================================
+   ROMANTIC ONE-PAGE SITE — vanilla JS, well commented
+   ========================================================= */
+
+/* ---------- Cursor heart trail (desktop only) ---------- */
+const cursorDot = document.getElementById('cursorDot');
+const isDesktop = window.matchMedia('(min-width: 769px)').matches;
+if (isDesktop) {
+  document.addEventListener('mousemove', (e) => {
+    cursorDot.style.left = e.clientX + 'px';
+    cursorDot.style.top = e.clientY + 'px';
+  });
+  let lastHeart = 0;
+  document.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - lastHeart < 90) return; // throttle
+    lastHeart = now;
+    const h = document.createElement('i');
+    h.className = 'fa-solid fa-heart cursor-heart';
+    h.style.left = e.clientX + 'px';
+    h.style.top = e.clientY + 'px';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1000);
+  });
+}
+
+/* ---------- Floating hearts background ---------- */
+const fhContainer = document.getElementById('floatingHearts');
+function spawnFloatingHeart() {
+  const h = document.createElement('i');
+  const icons = ['fa-heart','fa-star'];
+  h.className = 'fa-solid ' + icons[Math.random() < 0.85 ? 0 : 1] + ' fh';
+  const size = 10 + Math.random() * 22;
+  h.style.fontSize = size + 'px';
+  h.style.left = Math.random() * 100 + 'vw';
+  h.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+  const duration = 9 + Math.random() * 10;
+  h.style.animationDuration = duration + 's';
+  h.style.opacity = 0.25 + Math.random() * 0.5;
+  fhContainer.appendChild(h);
+  setTimeout(() => h.remove(), duration * 1000 + 500);
+}
+setInterval(spawnFloatingHeart, 650);
+for (let i = 0; i < 8; i++) setTimeout(spawnFloatingHeart, i * 300);
+
+/* ---------- Starfield canvas ---------- */
+const starCanvas = document.getElementById('stars');
+const sctx = starCanvas.getContext('2d');
+let stars = [];
+function resizeStars() {
+  starCanvas.width = window.innerWidth;
+  starCanvas.height = document.body.scrollHeight;
+  stars = [];
+  const count = Math.floor((starCanvas.width * starCanvas.height) / 14000);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * starCanvas.width,
+      y: Math.random() * starCanvas.height,
+      r: Math.random() * 1.4 + 0.3,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.01 + Math.random() * 0.02
+    });
+  }
+}
+function drawStars(t) {
+  sctx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+  sctx.fillStyle = '#fff3ea';
+  stars.forEach(s => {
+    const alpha = 0.35 + 0.65 * Math.abs(Math.sin(s.phase + t * s.speed));
+    sctx.globalAlpha = alpha;
+    sctx.beginPath();
+    sctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    sctx.fill();
+  });
+  sctx.globalAlpha = 1;
+  requestAnimationFrame(drawStars);
+}
+window.addEventListener('resize', resizeStars);
+resizeStars();
+requestAnimationFrame(drawStars);
+// re-measure height as content unlocks
+const resizeObserver = new ResizeObserver(() => resizeStars());
+resizeObserver.observe(document.body);
+
+/* ---------- Fireflies for final section ---------- */
+const fireflyCanvas = document.getElementById('fireflies');
+const fctx = fireflyCanvas.getContext('2d');
+let fireflies = [];
+function initFireflies() {
+  const rect = fireflyCanvas.getBoundingClientRect();
+  fireflyCanvas.width = rect.width;
+  fireflyCanvas.height = rect.height;
+  fireflies = Array.from({ length: 30 }, () => ({
+    x: Math.random() * fireflyCanvas.width,
+    y: Math.random() * fireflyCanvas.height,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    r: 1 + Math.random() * 2,
+    phase: Math.random() * Math.PI * 2
+  }));
+}
+function drawFireflies(t) {
+  if (fireflyCanvas.width) {
+    fctx.clearRect(0, 0, fireflyCanvas.width, fireflyCanvas.height);
+    fireflies.forEach(f => {
+      f.x += f.vx; f.y += f.vy;
+      if (f.x < 0 || f.x > fireflyCanvas.width) f.vx *= -1;
+      if (f.y < 0 || f.y > fireflyCanvas.height) f.vy *= -1;
+      const glow = 0.3 + 0.7 * Math.abs(Math.sin(f.phase + t * 0.002));
+      fctx.beginPath();
+      fctx.fillStyle = `rgba(243,199,127,${glow})`;
+      fctx.shadowColor = 'rgba(243,199,127,0.9)';
+      fctx.shadowBlur = 8;
+      fctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      fctx.fill();
+    });
+  }
+  requestAnimationFrame(drawFireflies);
+}
+window.addEventListener('resize', initFireflies);
+setTimeout(initFireflies, 300);
+requestAnimationFrame(drawFireflies);
+
+/* ---------- Scroll reveal ---------- */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('in');
+  });
+}, { threshold: 0.2 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ---------- SweetAlert helper with romantic theme ---------- */
+function romanticAlert(opts) {
+  return Swal.fire({
+    background: 'transparent',
+    customClass: { popup: 'romantic-popup rounded-3xl' },
+    confirmButtonColor: '#ff6f9c',
+    color: '#fff3ea',
+    ...opts
+  });
+}
+
+/* ---------- SECTION 1 -> 2 ---------- */
+document.getElementById('startBtn').addEventListener('click', () => {
+  document.getElementById('proposal').scrollIntoView({ behavior: 'smooth' });
+});
+
+/* ---------- "Yo'q" button — impossible to press ---------- */
+const noBtn = document.getElementById('noBtn');
+const yesBtn = document.getElementById('yesBtn');
+const funnyMessages = [
+  "Yo'q ishlamayapti 😂",
+  "Noto'g'ri javob 😭",
+  "Faqat HA ishlaydi 😌",
+  "Qayta urinib ko'r 😆",
+  "Bugun yo'q tugmasi ta'tilda.",
+  "Bu tugma vaqtincha o'chirilgan.",
+  "Aldamoqchi bo'ldingmi? 😂",
+  "Men bunga ruxsat bermayman 😎"
+];
+let noAttempts = 0;
+let noToastLock = false;
+
+function showFunnyToast() {
+  if (noToastLock) return;
+  noToastLock = true;
+  const msg = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+  Swal.fire({
+    toast: true,
+    position: 'top',
+    showConfirmButton: false,
+    timer: 1400,
+    timerProgressBar: true,
+    background: 'rgba(28,15,36,.95)',
+    color: '#fff3ea',
+    customClass: { popup: 'rounded-2xl' },
+    icon: undefined,
+    title: msg
+  }).then(() => { noToastLock = false; });
+}
+
+function dodgeNoButton() {
+  const wrap = noBtn.closest('.glass');
+  const rect = wrap.getBoundingClientRect();
+  const btnW = noBtn.offsetWidth, btnH = noBtn.offsetHeight;
+  const maxX = Math.max(window.innerWidth - btnW - 20, 20);
+  const maxY = Math.max(window.innerHeight - btnH - 20, 20);
+  const x = Math.random() * maxX;
+  const y = Math.random() * maxY;
+
+  noBtn.style.position = 'fixed';
+  noBtn.style.left = x + 'px';
+  noBtn.style.top = y + 'px';
+  noBtn.style.margin = '0';
+
+  const rotate = (Math.random() * 60 - 30).toFixed(0);
+  const scale = (0.7 + Math.random() * 0.6).toFixed(2);
+  noBtn.style.transform = `rotate(${rotate}deg) scale(${scale})`;
+
+  const anims = ['animate__tada', 'animate__rubberBand', 'animate__jello', 'animate__swing'];
+  const anim = anims[Math.floor(Math.random() * anims.length)];
+  noBtn.classList.remove(...anims, 'animate__animated');
+  void noBtn.offsetWidth; // reflow to restart animation
+  noBtn.classList.add('animate__animated', anim);
+
+  noAttempts++;
+  showFunnyToast();
+
+  if (noAttempts === 6) {
+    setTimeout(() => {
+      romanticAlert({
+        title: "Baribir 'Ha' ni bosasan 😌❤️",
+        confirmButtonText: 'Xo\'p bo\'ladi 😅'
+      });
+    }, 500);
+  }
+}
+
+// Desktop: dodge on hover. Mobile: dodge on touchstart (before tap registers).
+noBtn.addEventListener('mouseenter', dodgeNoButton);
+noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dodgeNoButton(); }, { passive: false });
+noBtn.addEventListener('click', (e) => { e.preventDefault(); dodgeNoButton(); });
+
+/* ---------- Confetti (custom, no external lib) ---------- */
+function fireConfetti() {
+  const colors = ['#ff6f9c', '#f3c77f', '#c8a4ff', '#ff9db8', '#fff3ea'];
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    const size = 6 + Math.random() * 6;
+    piece.style.position = 'fixed';
+    piece.style.zIndex = 9997;
+    piece.style.width = size + 'px';
+    piece.style.height = size * 0.4 + 'px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.top = '-5vh';
+    piece.style.opacity = '0.95';
+    piece.style.borderRadius = '2px';
+    piece.style.pointerEvents = 'none';
+    const fall = 2.5 + Math.random() * 2.5;
+    const rot = Math.random() * 720 - 360;
+    piece.animate([
+      { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+      { transform: `translateY(105vh) rotate(${rot}deg)`, opacity: 0.9 }
+    ], { duration: fall * 1000, easing: 'cubic-bezier(.2,.6,.3,1)' });
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), fall * 1000 + 100);
+  }
+}
+
+/* ---------- Heart explosion ---------- */
+function heartExplosion(originX, originY) {
+  for (let i = 0; i < 26; i++) {
+    const h = document.createElement('i');
+    h.className = 'fa-solid fa-heart';
+    h.style.position = 'fixed';
+    h.style.left = originX + 'px';
+    h.style.top = originY + 'px';
+    h.style.color = ['#ff6f9c', '#ff9db8', '#f3c77f'][i % 3];
+    h.style.fontSize = (14 + Math.random() * 18) + 'px';
+    h.style.zIndex = 9997;
+    h.style.pointerEvents = 'none';
+    const angle = (Math.PI * 2 * i) / 26 + Math.random() * 0.3;
+    const dist = 120 + Math.random() * 220;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    h.animate([
+      { transform: 'translate(-50%,-50%) scale(0.4)', opacity: 1 },
+      { transform: `translate(${dx - 8}px, ${dy - 8}px) scale(1.1)`, opacity: 0 }
+    ], { duration: 1100 + Math.random() * 500, easing: 'cubic-bezier(.16,.8,.3,1)' });
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1700);
+  }
+}
+
+/* ---------- "Ha" button — the whole reveal sequence ---------- */
+function unlockSection(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('locked');
+}
+
+yesBtn.addEventListener('click', async () => {
+  yesBtn.disabled = true;
+  const r = yesBtn.getBoundingClientRect();
+  fireConfetti();
+  heartExplosion(r.left + r.width / 2, r.top + r.height / 2);
+
+  await romanticAlert({ title: 'Yashaaa!! 🥳❤️', confirmButtonText: 'Davom et' });
+
+  Swal.fire({
+    background: 'transparent',
+    customClass: { popup: 'romantic-popup rounded-3xl' },
+    color: '#fff3ea',
+    title: 'Yuklanmoqda...',
+    didOpen: () => { Swal.showLoading(); },
+    timer: 1100,
+    showConfirmButton: false
+  });
+  await new Promise(res => setTimeout(res, 1100));
+
+  await romanticAlert({ title: "Hazillashdim 😂", confirmButtonText: 'Xo\'p' });
+
+  Swal.fire({
+    background: 'transparent',
+    customClass: { popup: 'romantic-popup rounded-3xl' },
+    color: '#fff3ea',
+    title: 'Yuklanmoqda...',
+    didOpen: () => { Swal.showLoading(); },
+    timer: 1000,
+    showConfirmButton: false
+  });
+  await new Promise(res => setTimeout(res, 1000));
+
+  await romanticAlert({ title: '...', confirmButtonText: 'Keyin nima?' });
+
+  await romanticAlert({
+    title: 'Lekin rostini aytsam...',
+    html: '<p class="text-lg mt-2">Agar sen rozi bo\'lsang, juda xursand bo\'lardim. ❤️</p>',
+    confirmButtonText: 'Davom et'
+  });
+
+  // unlock the rest of the journey
+  ['gallery', 'quiz', 'lovemeter', 'final'].forEach(unlockSection);
+  resizeStars();
+  document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+});
+
+/* ---------- Quiz logic ---------- */
+const quizFunny = {
+  10: "10%?? Yuragim chil-chil bo'ldi 💔😂",
+  30: "30% ozgina emasmi? 🥺",
+  50: "50%... yarim yo'lda qolma 😅"
+};
+document.querySelectorAll('.quiz-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = btn.dataset.val;
+    if (val !== '100') {
+      btn.classList.add('animate__animated', 'animate__headShake');
+      setTimeout(() => btn.classList.remove('animate__animated', 'animate__headShake'), 700);
+      romanticAlert({ title: quizFunny[val], confirmButtonText: "Qayta urinaman 😌" });
+    } else {
+      romanticAlert({ title: 'To\'g\'ri javob! 💯❤️', confirmButtonText: 'Ajoyib' }).then(() => {
+        document.getElementById('lovemeter').scrollIntoView({ behavior: 'smooth' });
+        setTimeout(animateLoveMeter, 500);
+      });
+    }
+  });
+});
+
+/* ---------- Love meter animation ---------- */
+let meterAnimated = false;
+function animateLoveMeter() {
+  if (meterAnimated) return;
+  meterAnimated = true;
+  const fill = document.getElementById('heartFill');
+  const percentEl = document.getElementById('meterPercent');
+  const labelNum = document.getElementById('meterLabelNum');
+  let current = 1;
+  fill.style.clipPath = 'inset(99% 0 0 0)';
+  const interval = setInterval(() => {
+    current += Math.ceil(Math.random() * 6);
+    if (current >= 100) {
+      current = 100;
+      clearInterval(interval);
+      document.getElementById('meterLabel').innerHTML = 'Moslik: <span id="meterLabelNum">100</span>% ❤️';
+      romanticAlert({ title: '❤️ Moslik: 100%', confirmButtonText: 'Voy!' });
+    }
+    fill.style.clipPath = `inset(${100 - current}% 0 0 0)`;
+    percentEl.textContent = current + '%';
+    if (labelNum) labelNum.textContent = current;
+  }, 90);
+}
+// also trigger automatically if user scrolls to it directly
+const loveMeterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { animateLoveMeter(); loveMeterObserver.disconnect(); }
+  });
+}, { threshold: 0.5 });
+loveMeterObserver.observe(document.getElementById('lovemeter'));
+
+/* ---------- Final section: typewriter ---------- */
+let typewriterStarted = false;
+async function typeLine(el) {
+  const text = el.dataset.text;
+  el.style.opacity = '1';
+  el.innerHTML = '';
+  for (let i = 0; i < text.length; i++) {
+    el.innerHTML = text.slice(0, i + 1).replace(/\n/g, '<br>') + '<span class="opacity-60">|</span>';
+    await new Promise(r => setTimeout(r, 28));
+  }
+  el.innerHTML = text;
+  await new Promise(r => setTimeout(r, 450));
+}
+async function runTypewriter() {
+  if (typewriterStarted) return;
+  typewriterStarted = true;
+  const lines = document.querySelectorAll('.typewriter-line');
+  for (const line of lines) { await typeLine(line); }
+  const ending = document.getElementById('endingBlock');
+  ending.style.opacity = '1';
+}
+const finalObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { runTypewriter(); finalObserver.disconnect(); }
+  });
+}, { threshold: 0.35 });
+finalObserver.observe(document.getElementById('final'));
+
+/* ---------- Hug button ---------- */
+document.getElementById('hugBtn').addEventListener('click', () => {
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const h = document.createElement('i');
+      h.className = 'fa-solid fa-heart';
+      h.style.position = 'fixed';
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.top = '105vh';
+      h.style.color = ['#ff6f9c', '#ff9db8', '#f3c77f', '#c8a4ff'][i % 4];
+      h.style.fontSize = (14 + Math.random() * 26) + 'px';
+      h.style.zIndex = 9997;
+      h.style.pointerEvents = 'none';
+      const dur = 2 + Math.random() * 2;
+      h.animate([
+        { transform: 'translateY(0) rotate(0deg)', opacity: 0.95 },
+        { transform: `translateY(-120vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+      ], { duration: dur * 1000, easing: 'ease-out' });
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), dur * 1000 + 100);
+    }, i * 25);
+  }
+  setTimeout(() => {
+    romanticAlert({ title: 'Virtual quchoq yuborildi 🤍', confirmButtonText: 'Rahmat' });
+  }, 500);
+});
+
+/* ---------- Write button ---------- */
+document.getElementById('writeBtn').addEventListener('click', () => {
+  Swal.fire({
+    background: 'transparent',
+    customClass: { popup: 'romantic-popup rounded-3xl' },
+    color: '#fff3ea',
+    title: 'Menga yoz 💌',
+    input: 'textarea',
+    inputPlaceholder: 'Fikringni shu yerga yoz...',
+    confirmButtonText: 'Yuborish',
+    confirmButtonColor: '#ff6f9c',
+    showCancelButton: true,
+    cancelButtonText: 'Bekor qilish',
+    inputValidator: (value) => !value && 'Biror narsa yozsang-chi 🙂'
+  }).then((res) => {
+    if (res.isConfirmed) {
+      romanticAlert({ title: 'Rahmat! Xabaring qabul qilindi 💌❤️', confirmButtonText: 'Voy, rahmat' });
+    }
+  });
+});
+</script>
+</body>
+</html>
